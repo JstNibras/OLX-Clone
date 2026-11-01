@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { registerUser } from "../services/authService";
+import { loginUser } from "../services/authService";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -39,5 +40,16 @@ export const register = async (req: Request, res: Response) => {
             success: false,
             message: "Internal server error",
         })
+    }
+}
+
+
+export const login = async (req: Request, res: Response) => {
+    try  {
+        const { email, password } = req.body;
+
+        if(typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
+            
+        }
     }
 }

@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
+import { generateToken } from "../utils/generateToken.js";
 
 interface RegisterInput {
     name: string;
@@ -29,4 +30,32 @@ export const registerUser = async (data: RegisterInput) => {
         name: user.name,
         email: user.email,
     };
+}
+
+export const loginUser = async (email: string, password: string) => {
+    const user = await User.findOne({ email }).select("+password");
+
+    if(!user) {
+        throw new Error("Invalid email or password")
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password
+    )
+
+    if (!isPasswordValid) {
+        throw new Error("Invalid email or password")
+    }
+
+    const token = generateToken(user._id.toString())
+
+    return {
+        token,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+        }
+    }
 }
