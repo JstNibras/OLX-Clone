@@ -22,3 +22,25 @@ export const loginApi = async (
 
     return response.data;
 }
+
+export interface RegisterInput {
+    name: string;
+    email: string;
+    password: string;
+}
+
+export interface RegisterResponce {
+    success: boolean;
+    user: User;
+}
+
+export const registerApi = async (
+    userData: RegisterInput
+): Promise<RegisterInput> => {
+    const responce = await api.post<RegisterInput>(
+        "/auth/register",
+        userData
+    )
+
+    return responce.data;
+}
