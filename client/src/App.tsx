@@ -9,11 +9,11 @@ function App() {
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
-      dispatch(initializeAuth())
+      dispatch(initializeAuth());
     }
   }, [dispatch]);
 
-  return <AppRouter />
+  return <AppRouter />;
 }
 
 export default App;

@@ -8,25 +8,30 @@ const initialState: AuthState = {
     token: null,
     isAuthenticated: false,
     isLoading: false,
+    isInitializing: false,
     error: null,
 }
 
 export const loginUser = createAsyncThunk(
-    "auth/login",
-    async (credentials: LoginInput, { rejectWithValue }) => {
-        try {
-            const response = await loginApi(credentials);
+  "auth/login",
+  async (credentials: LoginInput, { rejectWithValue }) => {
+    try {
+      const response = await loginApi(credentials);
 
-            localStorage.setItem("token", response.token)
+      if (!response.token) {
+        return rejectWithValue("Token missing from login response");
+      }
 
-            return response;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data?.message || "Login failed"
-            )
-        }
+      localStorage.setItem("token", response.token);
+
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Login failed"
+      );
     }
-)
+  }
+);
 
 export const registerUser = createAsyncThunk(
   "auth/register",
@@ -108,16 +113,16 @@ const authSlice = createSlice({
             state.error = action.payload as string;
         })
         .addCase(initializeAuth.pending, (state) => {
-            state.isLoading = true;
+            state.isInitializing = true;
         })
         .addCase(initializeAuth.fulfilled, (state, action) => {
-            state.isLoading = false;
+            state.isInitializing = false;
             state.user = action.payload;
             state.token = localStorage.getItem("token");
             state.isAuthenticated = true;
         })
         .addCase(initializeAuth.rejected, (state) => {
-            state.isLoading = false;
+            state.isInitializing = false;
             state.user = null;
             state.token = null;
             state.isAuthenticated = false;

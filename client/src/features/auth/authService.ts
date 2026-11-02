@@ -6,22 +6,25 @@ export interface LoginInput {
     password: string;
 }
 
-export interface LoginResponce {
+export interface LoginResponse {
     success: boolean;
-    token: string;
-    user: User;
+    message: string;
+    data: {
+        token: string;
+        user: User;
+    };
 }
 
 export const loginApi = async (
-    credentials: LoginInput
-): Promise<LoginResponce> => {
-    const response = await api.post<LoginResponce>(
-        "/auth/login",
-        credentials
-    )
+  credentials: LoginInput
+): Promise<LoginResponse["data"]> => {
+  const response = await api.post<LoginResponse>(
+    "/auth/login",
+    credentials
+  );
 
-    return response.data;
-}
+  return response.data.data;
+};
 
 export interface RegisterInput {
     name: string;

@@ -9,5 +9,6 @@ export interface AuthState {
     token: string | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isInitializing: boolean;
     error: string | null;
 }
