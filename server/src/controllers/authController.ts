@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { registerUser } from "../services/authService";
 import { loginUser } from "../services/authService";
+import { rawListeners } from "node:cluster";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -49,7 +50,35 @@ export const login = async (req: Request, res: Response) => {
         const { email, password } = req.body;
 
         if(typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
-            
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required"
+            })
         }
+
+        const result = await loginUser(
+            email.trim().toLowerCase(),
+            password
+        )
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successfull",
+            data: result,
+        })
+    } catch (error) {
+        if(error instanceof Error && error.message === "Invalid email or password") {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password"
+            })
+        }
+
+        console.error("Login Error: ", error)
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
     }
 }
