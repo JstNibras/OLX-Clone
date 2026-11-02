@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { registerUser } from "../services/authService";
 import { loginUser } from "../services/authService";
-import { rawListeners } from "node:cluster";
+import User from "../models/User";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -80,5 +80,39 @@ export const login = async (req: Request, res: Response) => {
             success: false,
             message: "Internal server error",
         });
+    }
+}
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+    try {
+        if(!req.userId) {
+            return res.status(401).json({
+                sucess: false,
+                message: "Unauthorized"
+            })
+        }
+
+        const user = await User.findById(req.userId);
+
+        if(!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+            },
+        })
+    } catch {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch user",
+        })
     }
 }
