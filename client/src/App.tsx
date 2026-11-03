@@ -1,34 +1,19 @@
-import { useEffect, useState } from "react";
-import { checkServerHealth } from "./services/healthService";
+import { useEffect } from "react";
+
+import AppRouter from "./routes/AppRouter";
+import { useAppDispatch } from "./app/hooks";
+import { initializeAuth } from "./features/auth/authSlice";
 
 function App() {
-  const [message, setMessage] = useState("Checking server....")
-  const [ error, setError] = useState("");
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const testConnection  = async () => {
-      try {
-        const data = await checkServerHealth();
-        setMessage(data.message);
-      } catch {
-        setError("unable to connect to the backend.")
-      }
+    if (localStorage.getItem("token")) {
+      dispatch(initializeAuth());
     }
+  }, [dispatch]);
 
-    testConnection();
-  }, []);
-
-  return (
-    <div>
-      <h1>OLX Marketplace</h1>
-
-      {error ? (
-        <p>{error}</p>
-      ) : (
-        <p>{message}</p>
-      )}
-    </div>
-  )
+  return <AppRouter />;
 }
 
 export default App;
