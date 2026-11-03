@@ -5,7 +5,8 @@ import {
     getAvailableProducts, 
     getProductById, 
     createProduct, 
-    getMyProducts 
+    getMyProducts,
+    updateProduct 
 } from "../services/productService.js";
 
 export const getProducts = async (req: Request, res: Response) => {
@@ -147,6 +148,71 @@ export const getMyProductsController = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch your products"
+        })
+    }
+}
+
+export const updateProductController = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { title, description, price, category, images } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Product Id",
+            })
+        }
+
+        if (
+            !title?.trim() ||
+            !description?.trim() ||
+            price === undefined ||
+            !category?.trim() ||
+            !Array.isArray(images) ||
+            images.length === 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        const parsedPrice = Number(price);
+
+        if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price must be a valid non-negative number",
+            })
+        }
+
+        const product = await updateProduct(id, req.userId, {
+            title: title.trim(),
+            description: description.trim(),
+            price: parsedPrice,
+            category: category.trim(),
+            images,
+        })
+
+        if(!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found, not owned by you, or already sold",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Product updated successfully",
+            data: product,
+        })
+    } catch (error) {
+        console.error("Update product error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update product",
         })
     }
 }

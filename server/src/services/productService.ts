@@ -8,6 +8,24 @@ interface ProductQuery {
     limit?: number;
 }
 
+interface CreateProductInput {
+    sellerId: string;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    images: string[];
+}
+
+interface UpdateProductInput {
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    images: string[];
+}
+
+
 export const getAvailableProducts = async (query: ProductQuery) => {
     const {
         search,
@@ -78,15 +96,6 @@ export const getProductById = async (productId: string) => {
     }).lean();
 }
 
-interface CreateProductInput {
-    sellerId: string;
-    title: string;
-    description: string;
-    price: number;
-    category: string;
-    images: string[];
-}
-
 export const createProduct = async (input: CreateProductInput) => {
     return Product.create({
         sellerId: input.sellerId,
@@ -102,4 +111,31 @@ export const getMyProducts = async (sellerId: string) => {
     return Product.find({ sellerId })
         .sort({ createdAt: -1 })
         .lean()
+}
+
+export const updateProduct = async (
+    productId: string,
+    sellerId: string,
+    input: UpdateProductInput
+) => {
+    return Product.findOneAndUpdate(
+        {
+            _id: productId,
+            sellerId,
+            status: "AVAILABLE",
+        },
+        {
+            $set: {
+                title: input.title,
+                description: input.description,
+                price: input.price,
+                category: input.category,
+                images: input.images,
+            },
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    ).lean();
 }
