@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { loginUser } from "../../features/auth/authSlice";
@@ -12,6 +12,9 @@ interface LoginFormValues {
 const LoginPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || "/";
 
     const { isLoading, error } = useAppSelector(
         (state) => state.auth
@@ -23,7 +26,7 @@ const LoginPage = () => {
         try {
             await dispatch(loginUser(data)).unwrap();
 
-            navigate("/");
+            navigate(from, { replace: true });
         } catch {
 
         }

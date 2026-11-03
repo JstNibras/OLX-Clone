@@ -7,6 +7,7 @@ import {
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 
 const AppRouter = () => {
   return (
@@ -14,8 +15,10 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<h1>Home Page</h1>} />
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
         <Route element={<ProtectedRoute />}>
           <Route path="/cart" element={<h1>Cart Page</h1>} />
