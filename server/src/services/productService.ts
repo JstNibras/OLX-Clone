@@ -36,7 +36,8 @@ export const getAvailableProducts = async (query: ProductQuery) => {
     } = query;
 
     const filter: Record<string, unknown> = {
-        status: "AVAILABLE"
+        status: "AVAILABLE",
+        isDeleted: false,
     }
 
     if(search) {
@@ -92,7 +93,8 @@ export const getAvailableProducts = async (query: ProductQuery) => {
 export const getProductById = async (productId: string) => {
     return Product.findOne({
         _id: productId,
-        status: "AVAILABLE"
+        status: "AVAILABLE",
+        isDeleted: false,
     }).lean();
 }
 
@@ -108,7 +110,7 @@ export const createProduct = async (input: CreateProductInput) => {
 }
 
 export const getMyProducts = async (sellerId: string) => {
-    return Product.find({ sellerId })
+    return Product.find({ sellerId, isDeleted: false })
         .sort({ createdAt: -1 })
         .lean()
 }
@@ -119,6 +121,7 @@ export const updateProduct = async ( productId: string, sellerId: string, input:
             _id: productId,
             sellerId,
             status: "AVAILABLE",
+            isDeleted: false,
         },
         {
             $set: {
@@ -132,6 +135,25 @@ export const updateProduct = async ( productId: string, sellerId: string, input:
         {
             new: true,
             runValidators: true,
+        }
+    ).lean();
+}
+
+export const deleteProduct = async ( productId: string, sellerId: string) => {
+    return Product.findOneAndUpdate(
+        {
+            _id: productId,
+            sellerId,
+            status: "AVAILABLE",
+            isDeleted: false,
+        },
+        {
+            $set: {
+                isDeleted: true,
+            },
+        },
+        {
+            new: true,
         }
     ).lean();
 }

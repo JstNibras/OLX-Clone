@@ -10,6 +10,7 @@ export interface IProduct extends Document {
     category: string;
     images: string[];
     status: ProductStatus;
+    isDeleted: boolean;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -57,6 +58,11 @@ const productSchema = new Schema<IProduct>(
             type: String,
             enum: ["AVAILABLE", "SOLD"],
             default: "AVAILABLE",
+        },
+
+        isDeleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {

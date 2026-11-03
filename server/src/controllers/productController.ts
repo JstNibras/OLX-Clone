@@ -6,7 +6,8 @@ import {
     getProductById, 
     createProduct, 
     getMyProducts,
-    updateProduct 
+    updateProduct,
+    deleteProduct, 
 } from "../services/productService.js";
 
 export const getProducts = async (req: Request, res: Response) => {
@@ -213,6 +214,40 @@ export const updateProductController = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to update product",
+        })
+    }
+}
+
+export const deleteProductController = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID",
+            })
+        }
+
+        const product = await deleteProduct(id, req.userId);
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found, not owned bu you, or already sold",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Product deleted successfully",
+        })
+    } catch (error) {
+        console.error("Deleted product error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete product",
         })
     }
 }
