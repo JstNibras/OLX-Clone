@@ -113,11 +113,7 @@ export const getMyProducts = async (sellerId: string) => {
         .lean()
 }
 
-export const updateProduct = async (
-    productId: string,
-    sellerId: string,
-    input: UpdateProductInput
-) => {
+export const updateProduct = async ( productId: string, sellerId: string, input: UpdateProductInput) => {
     return Product.findOneAndUpdate(
         {
             _id: productId,
