@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 import type { Request, Response } from "express";
-import { getAvailableProducts, getProductById } from "../services/productService";
+import { getAvailableProducts, getProductById, createProduct } from "../services/productService.js";
 
 export const getProducts = async (req: Request, res: Response) => {
     try {
@@ -46,11 +46,11 @@ export const getProductDetails = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        if(!mongoose.Types.ObjectId.isValid(id)){
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid product ID",
-            })
+            });
         }
 
         const product = await getProductById(id);
@@ -72,6 +72,57 @@ export const getProductDetails = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch prodyct details",
+        })
+    }
+}
+
+export const createProductController = async (req: Request, res: Response) => {
+    try {
+        const { title, description, price, category, images } = req.body;
+
+        if (
+            !title ||
+            !description ||
+            price === undefined ||
+            !category ||
+            !Array.isArray(images) ||
+            images.length === 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        const parsedPrice = Number(price);
+
+        if(!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price must be valid non-negative number"
+            })
+        }
+
+        const product = await createProduct({
+            sellerId: req.userId,
+            title,
+            description,
+            price: parsedPrice,
+            category,
+            images,
+        })
+
+        return res.status(201).json({
+            success: true,
+            message: "Product created successfully",
+            data: product
+        })
+    } catch (error) {
+        console.error("Creat product error : ", error)
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create product"
         })
     }
 }

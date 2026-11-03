@@ -77,3 +77,23 @@ export const getProductById = async (productId: string) => {
         status: "AVAILABLE"
     }).lean();
 }
+
+interface CreateProductInput {
+    sellerId: string;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    images: string[];
+}
+
+export const createProduct = async (input: CreateProductInput) => {
+    return Product.create({
+        sellerId: input.sellerId,
+        title: input.title,
+        description: input.description,
+        price: input.price,
+        category: input.category,
+        images: input.images,
+    })
+}
