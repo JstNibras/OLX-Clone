@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 
 import type { Request, Response } from "express";
-import { getAvailableProducts, getProductById, createProduct } from "../services/productService.js";
+import { 
+    getAvailableProducts, 
+    getProductById, 
+    createProduct, 
+    getMyProducts 
+} from "../services/productService.js";
 
 export const getProducts = async (req: Request, res: Response) => {
     try {
@@ -123,6 +128,25 @@ export const createProductController = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to create product"
+        })
+    }
+}
+
+export const getMyProductsController = async (req: Request, res: Response) => {
+    try {
+        const products = await getMyProducts(req.userId);
+
+        return res.status(200).json({
+            success: true,
+            count: products.length,
+            data: products
+        })
+    } catch (error) {
+        console.error("Get my product error: ", error)
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch your products"
         })
     }
 }

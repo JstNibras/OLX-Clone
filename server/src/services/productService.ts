@@ -97,3 +97,9 @@ export const createProduct = async (input: CreateProductInput) => {
         images: input.images,
     })
 }
+
+export const getMyProducts = async (sellerId: string) => {
+    return Product.find({ sellerId })
+        .sort({ createdAt: -1 })
+        .lean()
+}
