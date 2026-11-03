@@ -70,3 +70,10 @@ export const getAvailableProducts = async (query: ProductQuery) => {
         totalPages: Math.ceil(totalProducts / limit),
     }
 }
+
+export const getProductById = async (productId: string) => {
+    return Product.findOne({
+        _id: productId,
+        status: "AVAILABLE"
+    }).lean();
+}

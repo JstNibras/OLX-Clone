@@ -1,5 +1,7 @@
+import mongoose from "mongoose";
+
 import type { Request, Response } from "express";
-import { getAvailableProducts } from "../services/productService";
+import { getAvailableProducts, getProductById } from "../services/productService";
 
 export const getProducts = async (req: Request, res: Response) => {
     try {
@@ -36,6 +38,40 @@ export const getProducts = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch products",
+        })
+    }
+}
+
+export const getProductDetails = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(id)){
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID",
+            })
+        }
+
+        const product = await getProductById(id);
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: product,
+        })
+    } catch (error) {
+        console.log("Get product details error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch prodyct details",
         })
     }
 }
