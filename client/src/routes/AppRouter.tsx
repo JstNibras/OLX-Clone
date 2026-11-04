@@ -6,6 +6,7 @@ import {
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import ProductsPage from "../pages/auth/ProductsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 
@@ -43,6 +44,7 @@ const AppRouter = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<ProductsPage />} />
         
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
