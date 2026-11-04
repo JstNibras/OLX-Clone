@@ -91,3 +91,7 @@ export const checkout = async (buyerId: string) => {
         await session.endSession();
     }
 }
+
+export const getMyOrders = async (buyerId: string) => {
+    return Order.find({ buyerId }).sort({ createdAt: -1 }).lean()
+}

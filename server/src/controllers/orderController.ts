@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { checkout } from "../services/orderService.js";
+import { checkout, getMyOrders } from "../services/orderService.js";
 
 export const checkoutController = async (req: Request, res: Response) => {
   try {
@@ -42,3 +42,22 @@ export const checkoutController = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getMyOrdersController = async (req: Request, res: Response) => {
+    try {
+        const orders = await getMyOrders(req.userId)
+
+        return res.status(200).json({
+            success: true,
+            count: orders.length,
+            data: orders,
+        })
+    } catch (error) {
+        console.error("Get my orders error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "FAiled to fetch your orders",
+        })
+    }
+}
