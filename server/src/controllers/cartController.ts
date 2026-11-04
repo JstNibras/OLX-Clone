@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-import { addProductToCart } from "../services/cartService";
+import { 
+    addProductToCart,
+    getUserCart,
+ } from "../services/cartService";
 
 export const addToCartController = async (req: Request, res: Response) => {
     try {
@@ -44,5 +47,23 @@ export const addToCartController = async (req: Request, res: Response) => {
             success: false,
             message: "Failed to add product to cart",
         });
+    }
+}
+
+export const getCartController = async (req: Request, res: Response) => {
+    try {
+        const cart = await getUserCart(req.userId);
+
+        return res.status(200).json({
+            success: true,
+            data: cart,
+        })
+    } catch (error) {
+        console.error("Get cart error : ", error)
+
+        return res.status(500).json({
+            success: true,
+            message: "Failed to fetch cart",
+        })
     }
 }

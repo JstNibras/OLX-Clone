@@ -32,3 +32,31 @@ export const addProductToCart = async (userId: string, productId: string) => {
 
     return { cart, error: null}
 }
+
+export const getUserCart = async (userId: string) => {
+    const cart = await Cart.findOne({ userId })
+        .populate({
+            path: "productIds",
+            match: {
+                status: "AVAILABLE",
+                isDeleted: false,
+            },
+            select: "titile description price category images sellerId status",
+            populate: {
+                path: "sellerId",
+                select: "name",
+            },
+        }).lean();
+
+    if(!cart) {
+        return {
+            userId,
+            productIds: [],
+        }
+    }
+
+    return {
+        ...cart,
+        productIds: cart.productIds.filter(Boolean),
+    }
+}
