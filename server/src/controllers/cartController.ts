@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { 
     addProductToCart,
     getUserCart,
+    removeProductFromCart,
  } from "../services/cartService";
 
 export const addToCartController = async (req: Request, res: Response) => {
@@ -65,5 +66,40 @@ export const getCartController = async (req: Request, res: Response) => {
             success: true,
             message: "Failed to fetch cart",
         })
+    }
+}
+
+export const removeFromCartController = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID"
+            })
+        }
+
+        const cart = await removeProductFromCart(req.userId, productId);
+
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Product removed from cart",
+            data: cart,
+        })
+    } catch (error) {
+        console.error("Remove from cart error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to remove product from cart",
+        });
     }
 }
