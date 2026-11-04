@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 import { getProducts } from "../../services/productService";
 import type { Product } from "../../types/product";
 
@@ -81,13 +83,19 @@ const ProductsPage = () => {
         <div>
           {products.map((product) => (
             <div key={product._id}>
-              <img
-                src={product.images[0]}
-                alt={product.title}
-                width="150"
-              />
+              <Link to={`/products/${product._id}`}>
+                <img
+                  src={product.images[0]}
+                  alt={product.title}
+                  width="200"
+                />
+              </Link>
 
-              <h2>{product.title}</h2>
+              <h3>
+                <Link to={`/products/${product._id}`}>
+                  {product.title}
+                </Link>
+              </h3>
 
               <p>{product.category}</p>
 

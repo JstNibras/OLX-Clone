@@ -1,5 +1,5 @@
 import api from "./api";
-import type { ProductListResponse } from "../types/product";
+import type { ProductListResponse, Product } from "../types/product";
 
 export interface ProductQueryParams {
   search?: string;
@@ -17,4 +17,11 @@ export const getProducts = async (
   });
 
   return response.data;
+};
+
+export const getProductById = async (
+  productId: string
+): Promise<Product> => {
+  const response = await api.get(`/products/${productId}`);
+  return response.data.data;
 };

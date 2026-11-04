@@ -7,6 +7,8 @@ import {
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ProductsPage from "../pages/auth/ProductsPage";
+import ProductDetailsPage from "../pages/auth/ProductDetailsPage";
+
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 
@@ -45,6 +47,7 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetailsPage />} />
         
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
