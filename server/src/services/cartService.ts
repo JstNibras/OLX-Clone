@@ -60,3 +60,17 @@ export const getUserCart = async (userId: string) => {
         productIds: cart.productIds.filter(Boolean),
     }
 }
+
+export const removeProductFromCart = async (userId: string, productId: string) => {
+    return Cart.findOneAndUpdate(
+        { userId },
+        {
+            $pull: {
+                productIds: productId,
+            },
+        },
+        {
+            new: true,
+        }
+    )
+}
