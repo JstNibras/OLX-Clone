@@ -1,5 +1,6 @@
+import mongoose from "mongoose";
 import type { Request, Response } from "express";
-import { checkout, getMyOrders } from "../services/orderService.js";
+import { checkout, getMyOrders, getOrderById } from "../services/orderService.js";
 
 export const checkoutController = async (req: Request, res: Response) => {
   try {
@@ -58,6 +59,40 @@ export const getMyOrdersController = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "FAiled to fetch your orders",
+        })
+    }
+}
+
+export const getOrderDetailsController = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order ID",
+            })
+        }
+
+        const order = await getOrderById(id, req.userId)
+
+        if(!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: order,
+        })
+    } catch (error) {
+        console.error("Get order details error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch order details",
         })
     }
 }

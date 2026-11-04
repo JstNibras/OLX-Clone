@@ -95,3 +95,10 @@ export const checkout = async (buyerId: string) => {
 export const getMyOrders = async (buyerId: string) => {
     return Order.find({ buyerId }).sort({ createdAt: -1 }).lean()
 }
+
+export const getOrderById = async (orderId: string, buyerId: string) => {
+    return Order.findOne({
+        _id: orderId,
+        buyerId,
+    }).lean()
+}
