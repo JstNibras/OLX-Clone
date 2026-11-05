@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { addProductToCart } from "../../features/cart/cartSlice";
+
 import { getProducts } from "../../services/productService";
 import type { Product } from "../../types/product";
 
 const ProductsPage = () => {
+  const dispatch = useAppDispatch();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
@@ -13,6 +18,12 @@ const ProductsPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const addingToCart = useAppSelector(
+    (state) => state.cart.isAdding
+  );
+
+  const [cartMessage, setCartMessage] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -38,6 +49,22 @@ const ProductsPage = () => {
 
     fetchProducts();
   }, [search, sort, page]);
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      setCartMessage("");
+
+      await dispatch(addProductToCart(productId)).unwrap();
+
+      setCartMessage("Product added to cart successfully!");
+    } catch (error) {
+      setCartMessage(
+        typeof error === "string"
+          ? error
+          : "Failed to add product to cart"
+      );
+    }
+  };
 
   const handleSearchChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -100,6 +127,15 @@ const ProductsPage = () => {
               <p>{product.category}</p>
 
               <p>₹{product.price.toLocaleString("en-IN")}</p>
+
+              <button
+                onClick={() => handleAddToCart(product._id)}
+                disabled={addingToCart || product.status !== "AVAILABLE"}
+              >
+                {addingToCart ? "Adding..." : "Add to Cart"}
+              </button>
+
+              {cartMessage && <p>{cartMessage}</p>}
             </div>
           ))}
         </div>

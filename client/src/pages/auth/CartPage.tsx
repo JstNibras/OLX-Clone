@@ -1,103 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getCart, removeFromCart } from "../../services/cartService";
-import type { Product } from "../../types/product";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  fetchCart,
+  removeCartProduct,
+} from "../../features/cart/cartSlice";
 
 const CartPage = () => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [removingId, setRemovingId] = useState<string | null>(null)
+  const dispatch = useAppDispatch();
 
-    const fetchCart = async () => {
-        try {
-            setLoading(true);
-            setError("")
+  const { products, isLoading, error, removingId } = useAppSelector(
+    (state) => state.cart
+  );
 
-            const cartProducts = await getCart();
-            setProducts(cartProducts);
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to load cart")
-        } finally {
-            setLoading(false)
-        }
-    }
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
+  const handleRemove = (productId: string) => {
+    dispatch(removeCartProduct(productId));
+  };
 
-    const handleRemove = async (productId: string) => {
-        try {
-            setRemovingId(productId);
+  const totalPrice = products.reduce(
+    (total, product) => total + product.price,
+    0
+  );
 
-            await removeFromCart(productId);
+  if (isLoading) return <p>Loading cart...</p>;
 
-            setProducts((currentProducts) => currentProducts.filter((product) => product._id !== productId))
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to remove product");
-        } finally {
-            setRemovingId(null);
-        }
-    }
+  if (error && products.length === 0) {
+    return <p>{error}</p>;
+  }
 
-    const totalPrice = products.reduce(
-        (total, product) => total + product.price, 0
-    )
+  return (
+    <div>
+      <h1>My Cart</h1>
 
-    if(loading) return <p>Loading cart...</p>;
-    if(error && products.length === 0) return <p>{error}</p>
+      {error && <p>{error}</p>}
 
-    return (
-        <div>
-            <h1>My Cart</h1>
+      {products.length === 0 ? (
+        <p>Your cart is empty.</p>
+      ) : (
+        <>
+          {products.map((product) => (
+            <div key={product._id}>
+              <Link to={`/products/${product._id}`}>
+                {product.images.length > 0 && (
+                  <img
+                    src={product.images[0]}
+                    alt={product.title}
+                    width="150"
+                  />
+                )}
 
-            {error && <p>{error}</p>}
+                <h3>{product.title}</h3>
+              </Link>
 
-            {products.length === 0 ? (
-                <p>Your cart is empty.</p>
-            ) : (
-                <>
-                {products.map((product) => (
-                    <div key={product._id}>
-                    <Link to={`/products/${product._id}`}>
-                        {product.images.length > 0 && (
-                        <img
-                            src={product.images[0]}
-                            alt={product.title}
-                            width="150"
-                        />
-                        )}
+              <p>₹{product.price.toLocaleString("en-IN")}</p>
 
-                        <h3>{product.title}</h3>
-                    </Link>
+              <button
+                onClick={() => handleRemove(product._id)}
+                disabled={removingId === product._id}
+              >
+                {removingId === product._id ? "Removing..." : "Remove"}
+              </button>
+            </div>
+          ))}
 
-                    <p>₹{product.price.toLocaleString("en-IN")}</p>
+          <hr />
 
-                    <button
-                        onClick={() => handleRemove(product._id)}
-                        disabled={removingId === product._id}
-                    >
-                        {removingId === product._id
-                        ? "Removing..."
-                        : "Remove"}
-                    </button>
-                    </div>
-                ))}
+          <h2>Total: ₹{totalPrice.toLocaleString("en-IN")}</h2>
 
-                <hr />
-
-                <h2>
-                    Total: ₹{totalPrice.toLocaleString("en-IN")}
-                </h2>
-
-                <Link to="/checkout">
-                    <button>Proceed to Checkout</button>
-                </Link>
-                </>
-            )}
-        </div>
-    )
-}
+          <Link to="/checkout">
+            <button>Proceed to Checkout</button>
+          </Link>
+        </>
+      )}
+    </div>
+  );
+};
 
 export default CartPage;

@@ -8,10 +8,10 @@ export interface CartItem {
 export interface CartResponse {
   success: boolean;
   data: {
-    _id: string;
+    _id?: string;
     userId: string;
-    items: CartItem[];
-    createdAt: string;
-    updatedAt: string;
+    productIds: Product[];
+    createdAt?: string;
+    updatedAt?: string;
   };
 }

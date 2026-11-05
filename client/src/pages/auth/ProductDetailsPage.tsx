@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 
 import type { Product } from "../../types/product";
-
+import { addProductToCart } from "../../features/cart/cartSlice";
 import { getProductById } from "../../services/productService";
-import { addToCart } from "../../services/cartService";
 
 const ProductDetailsPage = () => {
+  const dispatch = useAppDispatch();
+
   const { id } = useParams<{ id: string }>();
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [addingToCart, setAddingToCart] = useState(false);
   const [cartMessage, setCartMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const addingToCart = useAppSelector(
+    (state) => state.cart.isAdding
+  );
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -43,18 +48,17 @@ const ProductDetailsPage = () => {
 
   const handleAddToCart = async () => {
     try {
-      setAddingToCart(true);
       setCartMessage("");
 
-      await addToCart(product._id);
-
+      await dispatch(addProductToCart(product._id)).unwrap();
       setCartMessage("Product added to cart successfully!");
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Failed to add product to cart";
+    } catch (error) {
+      const message =
+        typeof error === "string"
+          ? error
+          : "Failed to add product to cart";
 
       setCartMessage(message);
-    } finally {
-      setAddingToCart(false)
     }
   }
 
