@@ -1,0 +1,7 @@
+import api from "./api";
+
+export const checkout = async () => {
+    const response = await api.post("/orders/checkout")
+
+    return response.data
+}

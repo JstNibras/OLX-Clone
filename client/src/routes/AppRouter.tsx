@@ -9,6 +9,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import ProductsPage from "../pages/auth/ProductsPage";
 import ProductDetailsPage from "../pages/auth/ProductDetailsPage";
 import CartPage from "../pages/auth/CartPage";
+import CheckoutPage from "../pages/auth/CheckoutPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -57,7 +58,7 @@ const AppRouter = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<h1>Checkout Page</h1>} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/sell" element={<h1>Sell Product Page</h1>} />
           <Route path="/my-listings" element={<h1>My Listings</h1>} />
         </Route>
