@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getProductById } from "../../services/productService";
+
 import type { Product } from "../../types/product";
+
+import { getProductById } from "../../services/productService";
+import { addToCart } from "../../services/cartService";
 
 const ProductDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [cartMessage, setCartMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -36,6 +41,23 @@ const ProductDetailsPage = () => {
   if (error) return <p>{error}</p>;
   if (!product) return <p>Product not found</p>;
 
+  const handleAddToCart = async () => {
+    try {
+      setAddingToCart(true);
+      setCartMessage("");
+
+      await addToCart(product._id);
+
+      setCartMessage("Product added to cart successfully!");
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to add product to cart";
+
+      setCartMessage(message);
+    } finally {
+      setAddingToCart(false)
+    }
+  }
+
   return (
     <div>
       <h1>{product.title}</h1>
@@ -63,6 +85,12 @@ const ProductDetailsPage = () => {
       <p>
         <strong>Status:</strong> {product.status}
       </p>
+
+      <button onClick={handleAddToCart} disabled={addingToCart || product.status !== "AVAILABLE"}>
+        {addingToCart ? "Adding..." : "Add to Cart"}
+      </button>
+
+      {cartMessage && <p>{cartMessage}</p>}
     </div>
   );
 };
