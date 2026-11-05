@@ -1,69 +1,57 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import { getMyOrders } from "../../services/orderService";
-import type { Order } from "../../types/order";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { fetchMyOrders } from "../../features/orders/ordersSlice";
 
 const MyOrdersPage = () => {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("")
+  const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const data = await getMyOrders();
-                setOrders(data);
-            } catch (err: any) {
-                setError(err.response?.data?.message || "Failed to load orders");
-            } finally {
-                setLoading(false)
-            }
-        }
+  const { orders, isLoading, error } = useAppSelector(
+    (state) => state.orders
+  );
 
-        fetchOrders();
-    }, []);
+  useEffect(() => {
+    dispatch(fetchMyOrders());
+  }, [dispatch]);
 
-    if(loading) return <p>Loading orders....</p>
+  if (isLoading) return <p>Loading orders...</p>;
 
-    if (error) return <p>{error}</p>
+  if (error) return <p>{error}</p>;
 
-    return (
-        <div>
-            <h1>My Orders</h1>
+  return (
+    <div>
+      <h1>My Orders</h1>
 
-            {orders.length === 0 ? (
-                <p>You haven't placed any orders yet.</p>
-            ) : (
-                orders.map((order) => (
-                <div key={order._id}>
-                    <hr />
+      {orders.length === 0 ? (
+        <p>You haven't placed any orders yet.</p>
+      ) : (
+        orders.map((order) => (
+          <div key={order._id}>
+            <hr />
 
-                    <h3>Order ID: {order._id}</h3>
+            <h3>Order ID: {order._id}</h3>
 
-                    <p>
-                    Date:{" "}
-                    {new Date(order.createdAt).toLocaleDateString("en-IN")}
-                    </p>
+            <p>
+              Date: {new Date(order.createdAt).toLocaleDateString("en-IN")}
+            </p>
 
-                    <p>
-                    Status: {order.status}
-                    </p>
+            <p>Status: {order.status}</p>
 
-                    <p>
-                    Total: ₹{order.totalAmount.toLocaleString("en-IN")}
-                    </p>
+            <p>
+              Total: ₹{order.totalAmount.toLocaleString("en-IN")}
+            </p>
 
-                    <p>Items: {order.items.length}</p>
+            <p>Items: {order.items.length}</p>
 
-                    <Link to={`/orders/${order._id}`}>
-                    View Order Details
-                    </Link>
-                </div>
-                ))
-            )}
-        </div>
-    )
-}
+            <Link to={`/orders/${order._id}`}>
+              View Order Details
+            </Link>
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
 
 export default MyOrdersPage;

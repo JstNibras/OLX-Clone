@@ -6,12 +6,17 @@ import {
   removeFromCart,
 } from "../../services/cartService";
 
+import type { Order } from "../../types/order";
+import { checkout } from "../../services/orderService";
+
 interface CartState {
   products: Product[];
   isLoading: boolean;
   error: string | null;
   removingId: string | null;
   isAdding: boolean;
+  checkoutLoading: boolean;
+  checkoutError: string | null;
 }
 
 const initialState: CartState = {
@@ -20,6 +25,8 @@ const initialState: CartState = {
   error: null,
   removingId: null,
   isAdding: false,
+  checkoutLoading: false,
+  checkoutError: null,
 };
 
 export const fetchCart = createAsyncThunk<
@@ -63,6 +70,21 @@ export const removeCartProduct = createAsyncThunk<
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message || "Failed to remove product"
+    );
+  }
+});
+
+export const checkoutOrder = createAsyncThunk<
+  Order,
+  void,
+  { rejectValue: string }
+>("cart/checkout", async (_, { rejectWithValue }) => {
+  try {
+    const result = await checkout();
+    return result.data as Order;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Checkout failed"
     );
   }
 });
@@ -115,7 +137,20 @@ const cartSlice = createSlice({
       .addCase(removeCartProduct.rejected, (state, action) => {
         state.removingId = null;
         state.error = action.payload || "Failed to remove product";
-      });
+      })
+
+      .addCase(checkoutOrder.pending, (state) => {
+        state.checkoutLoading = true;
+        state.checkoutError = null;
+      })
+      .addCase(checkoutOrder.fulfilled, (state) => {
+        state.checkoutLoading = false;
+        state.products = [];
+      })
+      .addCase(checkoutOrder.rejected, (state, action) => {
+        state.checkoutLoading = false;
+        state.checkoutError = action.payload || "Checkout failed";
+      })
     },
 });
 

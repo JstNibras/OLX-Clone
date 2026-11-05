@@ -1,99 +1,96 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-import { getCart } from "../../services/cartService";
-import { checkout } from "../../services/orderService";
-import type { Product } from "../../types/product";
-import type { Order } from "../../types/order";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  fetchCart,
+  checkoutOrder,
+} from "../../features/cart/cartSlice";
 
 const CheckoutPage = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [processing, setProcessing] = useState(false);
-    const [error, setError] = useState("");
+  const {
+    products,
+    isLoading,
+    error,
+    checkoutLoading,
+    checkoutError,
+  } = useAppSelector((state) => state.cart);
 
-    useEffect(() => {
-        const fetchCart = async () => {
-            try {
-                const cartProducts = await getCart();
-                setProducts(cartProducts);
-            } catch (err: any) {
-                setError(err.response?.data?.message || "Failed to load checkout")
-            } finally {
-                setLoading(false)
-            }
-        }
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
-        fetchCart();
-    }, []);
+  const totalAmount = products.reduce(
+    (total, product) => total + product.price,
+    0
+  );
 
-    const totalAmount = products.reduce((total, product) => total + product.price, 0);
+  const handleCheckout = async () => {
+    try {
+      const order = await dispatch(checkoutOrder()).unwrap();
 
-    const handleCheckout = async () => {
-        try {
-            setProcessing(true);
-            setError("");
+      navigate(`/order-success/${order._id}`, { replace: true });
+    } catch {
 
-            const result = await checkout();
-            const order = result.data as Order;
-
-            navigate(`/order-success/${order._id}`, { replace: true })
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Checkout failed")
-        } finally {
-            setProcessing(false)
-        }
     }
+  };
 
-    if (products.length === 0) {
-        return (
-            <div>
-                <h1>Your cart is empty</h1>
-                <Link to="/products">Browse products</Link>
-            </div>
-        )
-    }
+  if (isLoading) {
+    return <p>Loading checkout...</p>;
+  }
 
+  if (error && products.length === 0) {
+    return <p>{error}</p>;
+  }
+
+  if (products.length === 0) {
     return (
-        <div>
-            <h1>Checkout</h1>
+      <div>
+        <h1>Your cart is empty</h1>
+        <Link to="/products">Browse products</Link>
+      </div>
+    );
+  }
 
-            {error && <p>{error}</p>}
+  return (
+    <div>
+      <h1>Checkout</h1>
 
-            <h2>Order Summary</h2>
+      {checkoutError && <p>{checkoutError}</p>}
 
-            {products.map((product) => (
-                <div key={product._id}>
-                <h3>{product.title}</h3>
+      <h2>Order Summary</h2>
 
-                {product.images.length > 0 && (
-                    <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    width="100"
-                    />
-                )}
+      {products.map((product) => (
+        <div key={product._id}>
+          <h3>{product.title}</h3>
 
-                <p>₹{product.price.toLocaleString("en-IN")}</p>
-                </div>
-            ))}
+          {product.images.length > 0 && (
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              width="100"
+            />
+          )}
 
-            <hr />
-
-            <h2>
-                Total: ₹{totalAmount.toLocaleString("en-IN")}
-            </h2>
-
-            <button
-                onClick={handleCheckout}
-                disabled={processing || products.length === 0}
-            >
-                {processing ? "Processing..." : "Place Order"}
-            </button>
+          <p>₹{product.price.toLocaleString("en-IN")}</p>
         </div>
-    )
-}
+      ))}
+
+      <hr />
+
+      <h2>Total: ₹{totalAmount.toLocaleString("en-IN")}</h2>
+
+      <button
+        onClick={handleCheckout}
+        disabled={checkoutLoading || products.length === 0}
+      >
+        {checkoutLoading ? "Processing..." : "Place Order"}
+      </button>
+    </div>
+  );
+};
 
 export default CheckoutPage;
