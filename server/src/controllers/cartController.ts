@@ -36,6 +36,13 @@ export const addToCartController = async (req: Request, res: Response) => {
             })
         }
 
+        if (result.error === "ALREADY_IN_CART") {
+            return res.status(409).json({
+                success: false,
+                message: "Product is already in your cart",
+            });
+        }
+
         return res.status(200).json({
             success: true,
             message: "Product added to cart",
@@ -63,7 +70,7 @@ export const getCartController = async (req: Request, res: Response) => {
         console.error("Get cart error : ", error)
 
         return res.status(500).json({
-            success: true,
+            success: false,
             message: "Failed to fetch cart",
         })
     }
