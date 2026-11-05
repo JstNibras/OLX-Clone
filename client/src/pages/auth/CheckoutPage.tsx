@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { getCart } from "../../services/cartService";
 import { checkout } from "../../services/orderService";
 import type { Product } from "../../types/product";
+import type { Order } from "../../types/order";
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -35,9 +36,10 @@ const CheckoutPage = () => {
             setProcessing(true);
             setError("");
 
-            await checkout();
+            const result = await checkout();
+            const order = result.data as Order;
 
-            navigate("/order-success", { replace: true })
+            navigate(`/order-success/${order._id}`, { replace: true })
         } catch (err: any) {
             setError(err.response?.data?.message || "Checkout failed")
         } finally {
