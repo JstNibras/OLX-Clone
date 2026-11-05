@@ -8,7 +8,7 @@ const initialState: AuthState = {
     token: null,
     isAuthenticated: false,
     isLoading: false,
-    isInitializing: false,
+    isInitializing: true,
     error: null,
 }
 

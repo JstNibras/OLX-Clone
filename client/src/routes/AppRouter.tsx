@@ -8,6 +8,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ProductsPage from "../pages/auth/ProductsPage";
 import ProductDetailsPage from "../pages/auth/ProductDetailsPage";
+import CartPage from "../pages/auth/CartPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -48,14 +49,14 @@ const AppRouter = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductDetailsPage />} />
-        
+
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/cart" element={<h1>Cart Page</h1>} />
+          <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<h1>Checkout Page</h1>} />
           <Route path="/sell" element={<h1>Sell Product Page</h1>} />
           <Route path="/my-listings" element={<h1>My Listings</h1>} />
