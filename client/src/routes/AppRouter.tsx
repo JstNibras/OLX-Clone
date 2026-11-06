@@ -16,6 +16,7 @@ import OrderDetailsPage from "../pages/auth/OrderDetailsPage";
 import MyListingsPage from "../pages/auth/myListingsPage";
 import CreateProductPage from "../pages/auth/CreateProductPage";
 import EditProductPage from "../pages/auth/EditProductPage";
+import Navbar from "../components/Navbar";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -52,6 +53,7 @@ const HomePage = () => {
 const AppRouter = () => {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
