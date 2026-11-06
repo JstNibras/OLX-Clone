@@ -14,6 +14,7 @@ import OrderSuccessPage from "../pages/auth/OrderSuccessPage";
 import MyOrdersPage from "../pages/auth/myOrdersPage";
 import OrderDetailsPage from "../pages/auth/OrderDetailsPage";
 import MyListingsPage from "../pages/auth/myListingsPage";
+import CreateProductPage from "../pages/auth/CreateProductPage";
 import EditProductPage from "../pages/auth/EditProductPage";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -69,6 +70,7 @@ const AppRouter = () => {
           <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
           <Route path="/sell" element={<h1>Sell Product Page</h1>} />
           <Route path="/my-listings" element={<MyListingsPage />} />
+          <Route path="/create-product" element={<CreateProductPage />} />
           <Route path="/edit-product/:id" element={<EditProductPage />}/>
         </Route>
       </Routes>

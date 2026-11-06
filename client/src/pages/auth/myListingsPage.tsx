@@ -34,7 +34,13 @@ const MyListingsPage = () => {
 
     return (
         <div>
-            <h1>My Listings</h1>
+            <div>
+                <h1>My Listings</h1>
+
+                <Link to="/create-product">
+                    + Sell Product
+                </Link>
+            </div>
 
             {products.length === 0 ? (
                 <p>You haven't listed any products yet.</p>

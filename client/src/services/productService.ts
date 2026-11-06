@@ -9,11 +9,20 @@ export interface ProductQueryParams {
   limit?: number;
 }
 
+export interface CreateProductData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  images: string[];
+}
+
 export interface UpdateProductData {
   title: string;
   description: string;
   price: number;
   category: string;
+  images: string[];
 }
 
 
@@ -33,8 +42,14 @@ export const getMyListings = async (): Promise<Product[]> => {
   return response.data.data;
 }
 
+export const createProduct = async (productData: CreateProductData): Promise<Product> => {
+  const response = await api.post("/products", productData);
+
+  return response.data.data;
+};
+
 export const updateProduct = async (productId: string, productData: UpdateProductData): Promise<Product> => {
-  const response = await api.put(`/product/${productId}`, productData)
+  const response = await api.put(`/products/${productId}`, productData)
 
   return response.data.data
 }

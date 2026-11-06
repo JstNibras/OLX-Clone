@@ -1,20 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+
 import { getProductById, updateProduct } from "../../services/productService";
 import type { Product } from "../../types/product";
+
+interface ProductFormData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+}
 
 const EditProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormData>();
 
+  const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,10 +39,12 @@ const EditProductPage = () => {
         const data = await getProductById(id);
 
         setProduct(data);
-        setTitle(data.title);
-        setDescription(data.description);
-        setPrice(String(data.price));
-        setCategory(data.category);
+        reset({
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          category: data.category,
+        });
       } catch (err) {
         console.error(err);
         setError("Failed to load product.");
@@ -44,35 +56,24 @@ const EditProductPage = () => {
     fetchProduct();
   }, [id]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: ProductFormData) => {
     if (!id) return;
 
-    const numericPrice = Number(price);
-
-    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-      setError("Please enter a valid price.");
-      return;
-    }
-
     setError("");
-    setIsSubmitting(true);
 
     try {
       await updateProduct(id, {
-        title,
-        description,
-        price: numericPrice,
-        category,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        category: data.category,
+        images: product.images,
       });
 
       navigate("/my-listings");
     } catch (err) {
       console.error(err);
       setError("Failed to update product.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -92,47 +93,70 @@ const EditProductPage = () => {
 
       {error && <p>{error}</p>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label htmlFor="title">Title</label>
           <input
             id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
+            {...register("title", {
+              required: "Title is required",
+              minLength: {
+                value: 3,
+                message: "Title must be at least 3 characters",
+              },
+            })}
           />
+
+          {errors.title && <p>{errors.title.message}</p>}
         </div>
 
         <div>
           <label htmlFor="description">Description</label>
+
           <textarea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
+            {...register("description", {
+              required: "Description is required",
+              minLength: {
+                value: 10,
+                message: "Description must be at least 10 characters",
+              },
+            })}
           />
+
+          {errors.description && <p>{errors.description.message}</p>}
         </div>
 
         <div>
           <label htmlFor="price">Price</label>
+
           <input
             id="price"
             type="number"
-            min="1"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
+            {...register("price", {
+              required: "Price is required",
+              valueAsNumber: true,
+              min: {
+                value: 1,
+                message: "Price must be greater than 0",
+              },
+            })}
           />
+
+          {errors.price && <p>{errors.price.message}</p>}
         </div>
 
         <div>
           <label htmlFor="category">Category</label>
+
           <input
             id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
+            {...register("category", {
+              required: "Category is required",
+            })}
           />
+
+          {errors.category && <p>{errors.category.message}</p>}
         </div>
 
         <button type="submit" disabled={isSubmitting}>
