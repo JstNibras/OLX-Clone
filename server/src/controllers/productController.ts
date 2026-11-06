@@ -1,12 +1,11 @@
 import mongoose from "mongoose";
-
 import type { Request, Response } from "express";
 import { 
     getAvailableProducts, 
     getProductById, 
     createProduct, 
-    getMyProducts,
-    updateProduct,
+    getMyProducts, 
+    updateProduct, 
     deleteProduct, 
 } from "../services/productService.js";
 
@@ -14,9 +13,9 @@ export const getProducts = async (req: Request, res: Response) => {
     try {
         const page = Math.max(1, Number(req.query.page) || 1);
         const limit = Math.min(
-            59,
-            Math.max(1, Number(req.query.limit) || 0)
-        )
+            50,
+            Math.max(1, Number(req.query.limit) || 12)
+        );
 
         const search = typeof req.query.search === "string"
                             ? req.query.search.trim() : undefined;
@@ -33,27 +32,27 @@ export const getProducts = async (req: Request, res: Response) => {
             sort,
             page,
             limit,
-        })
+        });
 
         return res.status(200).json({
             success: true,
             ...result,
-        })
+        });
     } catch (error) {
         console.error("Get products error : ", error);
 
         return res.status(500).json({
             success: false,
             message: "Failed to fetch products",
-        })
+        });
     }
-}
+};
 
 export const getProductDetails = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0];
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid product ID",
@@ -66,25 +65,32 @@ export const getProductDetails = async (req: Request, res: Response) => {
             return res.status(404).json({
                 success: false,
                 message: "Product not found",
-            })
+            });
         }
 
         return res.status(200).json({
             success: true,
             data: product,
-        })
+        });
     } catch (error) {
-        console.log("Get product details error: ", error);
+        console.error("Get product details error: ", error);
 
         return res.status(500).json({
             success: false,
-            message: "Failed to fetch prodyct details",
-        })
+            message: "Failed to fetch product details",
+        });
     }
-}
+};
 
 export const createProductController = async (req: Request, res: Response) => {
     try {
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
+        }
+
         const { title, description, price, category, images } = req.body;
 
         if (
@@ -103,11 +109,11 @@ export const createProductController = async (req: Request, res: Response) => {
 
         const parsedPrice = Number(price);
 
-        if(!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+        if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
             return res.status(400).json({
                 success: false,
-                message: "Price must be valid non-negative number"
-            })
+                message: "Price must be valid non-negative number",
+            });
         }
 
         const product = await createProduct({
@@ -117,53 +123,68 @@ export const createProductController = async (req: Request, res: Response) => {
             price: parsedPrice,
             category,
             images,
-        })
+        });
 
         return res.status(201).json({
             success: true,
             message: "Product created successfully",
-            data: product
-        })
+            data: product,
+        });
     } catch (error) {
-        console.error("Creat product error : ", error)
+        console.error("Create product error : ", error);
 
         return res.status(500).json({
             success: false,
-            message: "Failed to create product"
-        })
+            message: "Failed to create product",
+        });
     }
-}
+};
 
 export const getMyProductsController = async (req: Request, res: Response) => {
     try {
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
+        }
+
         const products = await getMyProducts(req.userId);
 
         return res.status(200).json({
             success: true,
             count: products.length,
-            data: products
-        })
+            data: products,
+        });
     } catch (error) {
-        console.error("Get my product error: ", error)
+        console.error("Get my product error: ", error);
 
         return res.status(500).json({
             success: false,
-            message: "Failed to fetch your products"
-        })
+            message: "Failed to fetch your products",
+        });
     }
-}
+};
 
 export const updateProductController = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const { title, description, price, category, images } = req.body;
+        const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0];
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid Product Id",
-            })
+            });
         }
+
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
+        }
+
+        const { title, description, price, category, images } = req.body;
 
         if (
             !title?.trim() ||
@@ -185,7 +206,7 @@ export const updateProductController = async (req: Request, res: Response) => {
             return res.status(400).json({
                 success: false,
                 message: "Price must be a valid non-negative number",
-            })
+            });
         }
 
         const product = await updateProduct(id, req.userId, {
@@ -194,39 +215,46 @@ export const updateProductController = async (req: Request, res: Response) => {
             price: parsedPrice,
             category: category.trim(),
             images,
-        })
+        });
 
-        if(!product) {
+        if (!product) {
             return res.status(404).json({
                 success: false,
                 message: "Product not found, not owned by you, or already sold",
-            })
+            });
         }
 
         return res.status(200).json({
             success: true,
             message: "Product updated successfully",
             data: product,
-        })
+        });
     } catch (error) {
         console.error("Update product error: ", error);
 
         return res.status(500).json({
             success: false,
             message: "Failed to update product",
-        })
+        });
     }
-}
+};
 
 export const deleteProductController = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0];
         
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid product ID",
-            })
+            });
+        }
+
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
         }
 
         const product = await deleteProduct(id, req.userId);
@@ -234,20 +262,47 @@ export const deleteProductController = async (req: Request, res: Response) => {
         if (!product) {
             return res.status(404).json({
                 success: false,
-                message: "Product not found, not owned bu you, or already sold",
-            })
+                message: "Product not found, not owned by you, or already sold",
+            });
         }
 
         return res.status(200).json({
             success: true,
             message: "Product deleted successfully",
-        })
+        });
     } catch (error) {
-        console.error("Deleted product error: ", error);
+        console.error("Delete product error: ", error);
 
         return res.status(500).json({
             success: false,
             message: "Failed to delete product",
-        })
+        });
     }
-}
+};
+
+export const uploadProductImageController = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select an image file to upload",
+            });
+        }
+
+        const protocol = req.protocol;
+        const host = req.get("host") || "localhost:5000";
+        const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+
+        return res.status(200).json({
+            success: true,
+            message: "Image uploaded successfully",
+            imageUrl,
+        });
+    } catch (error) {
+        console.error("Upload product image error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to upload image",
+        });
+    }
+};

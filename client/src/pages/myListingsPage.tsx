@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getMyListings } from "../../services/productService";
-import type { Product } from "../../types/product";
+import { getMyListings } from "../services/productService";
+import type { Product } from "../types/product";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60";
 

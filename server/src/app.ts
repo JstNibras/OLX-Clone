@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -12,12 +13,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req, res) => {
+// Serve uploaded product photos
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+app.get("/api/health", (_req, res) => {
     res.status(200).json({
         success: true,
-        message: "Server is running successfuly",
-    })
-})
+        message: "Server is running successfully",
+    });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

@@ -25,10 +25,8 @@ export interface UpdateProductData {
   images: string[];
 }
 
-
 export const getProducts = async (params: ProductQueryParams = {}): Promise<ProductListResponse> => {
   const response = await api.get("/products", { params });
-
   return response.data;
 };
 
@@ -38,18 +36,33 @@ export const getProductById = async (productId: string): Promise<Product> => {
 };
 
 export const getMyListings = async (): Promise<Product[]> => {
-  const response = await api.get("/products/my-listings")
+  const response = await api.get("/products/my-listings");
   return response.data.data;
-}
+};
 
 export const createProduct = async (productData: CreateProductData): Promise<Product> => {
   const response = await api.post("/products", productData);
-
   return response.data.data;
 };
 
 export const updateProduct = async (productId: string, productData: UpdateProductData): Promise<Product> => {
-  const response = await api.put(`/products/${productId}`, productData)
+  const response = await api.put(`/products/${productId}`, productData);
+  return response.data.data;
+};
 
-  return response.data.data
-}
+export const uploadProductImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await api.post<{ success: boolean; imageUrl: string }>(
+    "/products/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data.imageUrl;
+};

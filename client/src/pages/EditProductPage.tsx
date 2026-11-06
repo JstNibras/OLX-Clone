@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { getProductById, updateProduct } from "../../services/productService";
-import type { Product } from "../../types/product";
+import { getProductById, updateProduct, uploadProductImage } from "../services/productService";
+import type { Product } from "../types/product";
 
 interface ProductFormData {
   title: string;
   description: string;
   price: number;
   category: string;
-  imageUrl?: string;
 }
 
 const CATEGORIES = [
@@ -26,20 +25,22 @@ const CATEGORIES = [
 const EditProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ProductFormData>();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [newPreviewUrl, setNewPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  const currentImageUrl = watch("imageUrl");
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -57,7 +58,6 @@ const EditProductPage = () => {
           description: data.description,
           price: data.price,
           category: data.category,
-          imageUrl: data.images && data.images[0] ? data.images[0] : "",
         });
       } catch (err) {
         console.error(err);
@@ -70,15 +70,52 @@ const EditProductPage = () => {
     fetchProduct();
   }, [id, reset]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Please select a valid image file (JPEG, PNG, WEBP, GIF).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Image size must be less than 5MB.");
+      return;
+    }
+
+    setNewFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setNewPreviewUrl(objectUrl);
+  };
+
+  const handleRevertPhoto = () => {
+    setNewFile(null);
+    if (newPreviewUrl) {
+      URL.revokeObjectURL(newPreviewUrl);
+    }
+    setNewPreviewUrl(null);
+    setFileError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     if (!id || !product) return;
 
     setError("");
 
     try {
-      const finalImages = data.imageUrl?.trim()
-        ? [data.imageUrl.trim()]
-        : product.images;
+      setIsSubmitting(true);
+
+      let finalImages = product.images;
+
+      if (newFile) {
+        const uploadedUrl = await uploadProductImage(newFile);
+        finalImages = [uploadedUrl];
+      }
 
       await updateProduct(id, {
         title: data.title.trim(),
@@ -91,7 +128,9 @@ const EditProductPage = () => {
       navigate("/my-listings");
     } catch (err: unknown) {
       console.error(err);
-      setError("Failed to update product.");
+      setError("Failed to update product. Please check your inputs.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -140,20 +179,31 @@ const EditProductPage = () => {
     );
   }
 
+  const currentDisplayPhoto = newPreviewUrl || (product.images && product.images[0]) || "";
+
   return (
     <div className="page-container">
       <div className="product-form-container">
         <div className="product-form-card">
-          <div style={{ marginBottom: "1.75rem", borderBottom: "1px solid var(--color-divider)", paddingBottom: "1rem" }}>
+          <div
+            style={{
+              marginBottom: "1.75rem",
+              borderBottom: "1px solid var(--color-divider)",
+              paddingBottom: "1rem",
+            }}
+          >
             <h1 className="page-title" style={{ fontSize: "1.5rem" }}>
               Edit Ad
             </h1>
-            <p className="page-subtitle">Modify details or update price for your listing</p>
+            <p className="page-subtitle">
+              Modify details, change price, or update photos for your listing
+            </p>
           </div>
 
           {error && <div className="alert alert-danger">{error}</div>}
 
           <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Title */}
             <div className="form-group">
               <label className="form-label" htmlFor="title">
                 Ad Title *
@@ -174,6 +224,7 @@ const EditProductPage = () => {
               )}
             </div>
 
+            {/* Description */}
             <div className="form-group">
               <label className="form-label" htmlFor="description">
                 Description *
@@ -194,6 +245,7 @@ const EditProductPage = () => {
               )}
             </div>
 
+            {/* Price & Category */}
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label" htmlFor="price">
@@ -243,34 +295,78 @@ const EditProductPage = () => {
               </div>
             </div>
 
+            {/* Photo Section */}
             <div className="form-group">
-              <label className="form-label" htmlFor="imageUrl">
-                Image URL
-              </label>
+              <label className="form-label">Product Photo</label>
+
               <input
-                id="imageUrl"
-                className="form-input"
-                placeholder="https://example.com/image.jpg"
-                {...register("imageUrl")}
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
               />
 
-              {currentImageUrl && (
-                <div className="image-preview-wrapper">
+              <div className="file-upload-preview-box">
+                {currentDisplayPhoto ? (
                   <img
-                    src={currentImageUrl}
-                    alt="Preview"
-                    className="image-preview"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                    onLoad={(e) => {
-                      e.currentTarget.style.display = "block";
-                    }}
+                    src={currentDisplayPhoto}
+                    alt="Current product"
+                    className="file-upload-thumb"
                   />
+                ) : (
+                  <div
+                    style={{
+                      width: "90px",
+                      height: "75px",
+                      backgroundColor: "#f1f5f9",
+                      borderRadius: "var(--radius-sm)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.5rem",
+                    }}
+                  >
+                    📷
+                  </div>
+                )}
+
+                <div style={{ flex: 1, textAlign: "left" }}>
+                  <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--color-text-primary)" }}>
+                    {newFile ? `New photo: ${newFile.name}` : "Current Listing Photo"}
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+                    {newFile
+                      ? `${(newFile.size / 1024).toFixed(1)} KB (ready to upload)`
+                      : "Choose a new file to replace this photo"}
+                  </div>
                 </div>
-              )}
+
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {newFile ? "Change Photo" : "Upload New Photo"}
+                  </button>
+
+                  {newFile && (
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={handleRevertPhoto}
+                    >
+                      Keep Original
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {fileError && <span className="form-error">{fileError}</span>}
             </div>
 
+            {/* Actions */}
             <div style={{ display: "flex", gap: "1rem", marginTop: "1.75rem" }}>
               <button
                 type="submit"

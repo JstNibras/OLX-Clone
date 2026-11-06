@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { createProduct } from "../../services/productService";
+import { createProduct, uploadProductImage } from "../services/productService";
 
 interface ProductFormData {
   title: string;
   description: string;
   price: number;
   category: string;
-  imageUrl: string;
 }
 
 const CATEGORIES = [
@@ -24,29 +23,70 @@ const CATEGORIES = [
 
 const CreateProductPage = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<ProductFormData>();
 
-  const currentImageUrl = watch("imageUrl");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Please select a valid image file (JPEG, PNG, WEBP, GIF).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Image size must be less than 5MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  const handleRemovePhoto = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    setFileError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const onSubmit = async (data: ProductFormData) => {
+    if (!selectedFile) {
+      setFileError("Please select a photo for your product.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setSubmitError("");
+
+      const uploadedImageUrl = await uploadProductImage(selectedFile);
 
       await createProduct({
         title: data.title.trim(),
         description: data.description.trim(),
         price: data.price,
         category: data.category.trim(),
-        images: [data.imageUrl.trim()],
+        images: [uploadedImageUrl],
       });
 
       navigate("/my-listings");
@@ -65,18 +105,25 @@ const CreateProductPage = () => {
     <div className="page-container">
       <div className="product-form-container">
         <div className="product-form-card">
-          <div style={{ marginBottom: "1.75rem", borderBottom: "1px solid var(--color-divider)", paddingBottom: "1rem" }}>
+          <div
+            style={{
+              marginBottom: "1.75rem",
+              borderBottom: "1px solid var(--color-divider)",
+              paddingBottom: "1rem",
+            }}
+          >
             <h1 className="page-title" style={{ fontSize: "1.5rem" }}>
               Post Your Ad
             </h1>
             <p className="page-subtitle">
-              Reach thousands of buyers by listing your item accurately
+              Reach buyers quickly by uploading clear photos and details
             </p>
           </div>
 
           {submitError && <div className="alert alert-danger">{submitError}</div>}
 
           <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Title */}
             <div className="form-group">
               <label className="form-label" htmlFor="title">
                 Ad Title *
@@ -98,6 +145,7 @@ const CreateProductPage = () => {
               )}
             </div>
 
+            {/* Description */}
             <div className="form-group">
               <label className="form-label" htmlFor="description">
                 Description *
@@ -119,6 +167,7 @@ const CreateProductPage = () => {
               )}
             </div>
 
+            {/* Price & Category */}
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label" htmlFor="price">
@@ -170,43 +219,71 @@ const CreateProductPage = () => {
               </div>
             </div>
 
+            {/* Photo Upload from Computer */}
             <div className="form-group">
-              <label className="form-label" htmlFor="imageUrl">
-                Image URL *
-              </label>
-              <input
-                id="imageUrl"
-                className={`form-input ${errors.imageUrl ? "has-error" : ""}`}
-                placeholder="https://example.com/item-photo.jpg"
-                {...register("imageUrl", {
-                  required: "Image URL is required",
-                  pattern: {
-                    value: /^https?:\/\/.+/i,
-                    message: "Please enter a valid HTTP/HTTPS image URL",
-                  },
-                })}
-              />
-              {errors.imageUrl && (
-                <span className="form-error">{errors.imageUrl.message}</span>
-              )}
+              <label className="form-label">Product Photo *</label>
 
-              {currentImageUrl && (
-                <div className="image-preview-wrapper">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
+
+              {!previewUrl ? (
+                <div
+                  className="file-upload-dropzone"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="file-upload-icon">📷</div>
+                  <div className="file-upload-text">
+                    Click to select a photo from your computer
+                  </div>
+                  <div className="file-upload-subtext">
+                    Supported formats: JPG, PNG, WEBP, GIF (Max 5MB)
+                  </div>
+                </div>
+              ) : (
+                <div className="file-upload-preview-box">
                   <img
-                    src={currentImageUrl}
-                    alt="Product preview"
-                    className="image-preview"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                    onLoad={(e) => {
-                      e.currentTarget.style.display = "block";
-                    }}
+                    src={previewUrl}
+                    alt="Selected preview"
+                    className="file-upload-thumb"
                   />
+
+                  <div style={{ flex: 1, textAlign: "left" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--color-text-primary)" }}>
+                      {selectedFile?.name}
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+                      {selectedFile ? (selectedFile.size / 1024).toFixed(1) + " KB" : ""}
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Change Photo
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger-outline btn-sm"
+                      onClick={handleRemovePhoto}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               )}
+
+              {fileError && <span className="form-error">{fileError}</span>}
             </div>
 
+            {/* Actions */}
             <div style={{ display: "flex", gap: "1rem", marginTop: "1.75rem" }}>
               <button
                 type="submit"
@@ -214,7 +291,7 @@ const CreateProductPage = () => {
                 style={{ flex: 1 }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Publishing Ad..." : "Post Now"}
+                {isSubmitting ? "Uploading & Publishing..." : "Post Now"}
               </button>
 
               <Link to="/my-listings" className="btn btn-secondary btn-lg">

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import type { Product } from "../../types/product";
-import { addProductToCart } from "../../features/cart/cartSlice";
-import { getProductById } from "../../services/productService";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import type { Product } from "../types/product";
+import { addProductToCart } from "../features/cart/cartSlice";
+import { getProductById } from "../services/productService";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60";
 

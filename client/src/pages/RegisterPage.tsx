@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { registerUser } from "../../features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { registerUser } from "../features/auth/authSlice";
 
 interface RegisterFormValues {
   name: string;
@@ -34,7 +34,7 @@ const RegisterPage = () => {
 
       navigate("/login");
     } catch {
-      // Error is stored and presented via Redux auth slice
+
     }
   };
 

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { loginUser } from "../../features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { loginUser } from "../features/auth/authSlice";
 
 interface LoginFormValues {
   email: string;
@@ -28,7 +28,7 @@ const LoginPage = () => {
       await dispatch(loginUser(data)).unwrap();
       navigate(from, { replace: true });
     } catch {
-      // Error state is captured and displayed from Redux auth slice
+
     }
   };
 
