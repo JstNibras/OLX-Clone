@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { addProductToCart } from "../../features/cart/cartSlice";
-
 import { getProducts } from "../../services/productService";
 import type { Product } from "../../types/product";
+
+// const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60";
 
 const ProductsPage = () => {
   const dispatch = useAppDispatch();
@@ -19,10 +19,7 @@ const ProductsPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addingToCart = useAppSelector(
-    (state) => state.cart.isAdding
-  );
-
+  const addingToCart = useAppSelector((state) => state.cart.isAdding);
   const [cartMessage, setCartMessage] = useState("");
 
   useEffect(() => {
@@ -35,7 +32,7 @@ const ProductsPage = () => {
           search,
           sort,
           page,
-          limit: 10,
+          limit: 12,
         });
 
         setProducts(result.products);
@@ -53,113 +50,166 @@ const ProductsPage = () => {
   const handleAddToCart = async (productId: string) => {
     try {
       setCartMessage("");
-
       await dispatch(addProductToCart(productId)).unwrap();
-
       setCartMessage("Product added to cart successfully!");
-    } catch (error) {
+    } catch (err) {
       setCartMessage(
-        typeof error === "string"
-          ? error
-          : "Failed to add product to cart"
+        typeof err === "string" ? err : "Failed to add product to cart"
       );
     }
   };
 
-  const handleSearchChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
     setPage(1);
   };
 
-  const handleSortChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSort(event.target.value);
     setPage(1);
   };
 
   return (
-    <div>
-      <h1>Products</h1>
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Fresh Recommendations</h1>
+          <p className="page-subtitle">
+            Discover great deals on pre-owned electronics, vehicles, furniture and more
+          </p>
+        </div>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Search products..."
-        value={search}
-        onChange={handleSearchChange}
-      />
+      <div className="products-toolbar">
+        <div className="search-input-wrapper">
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Search products by title, category, keywords..."
+            value={search}
+            onChange={handleSearchChange}
+          />
+        </div>
 
-      <select value={sort} onChange={handleSortChange}>
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-      </select>
+        <div className="sort-select-wrapper">
+          <select className="form-select" value={sort} onChange={handleSortChange}>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
 
-      {isLoading && <p>Loading products...</p>}
-
-      {error && <p>{error}</p>}
-
-      {!isLoading && !error && products.length === 0 && (
-        <p>No products found.</p>
+      {cartMessage && (
+        <div className="alert alert-success">
+          <span>{cartMessage}</span>
+          <button
+            onClick={() => setCartMessage("")}
+            style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700 }}
+          >
+            ✕
+          </button>
+        </div>
       )}
 
-      {!isLoading && !error && (
-        <div>
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      {isLoading && (
+        <div className="loading-box">
+          <div className="spinner"></div>
+          <p>Loading recommendations...</p>
+        </div>
+      )}
+
+      {!isLoading && !error && products.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-state-icon">📦</div>
+          <h2 className="empty-state-title">No products found</h2>
+          <p className="empty-state-desc">
+            We couldn't find any products matching your search query. Try different keywords or reset your filters.
+          </p>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              setSearch("");
+              setSort("newest");
+            }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !error && products.length > 0 && (
+        <div className="product-grid">
           {products.map((product) => (
-            <div key={product._id}>
-              <Link to={`/products/${product._id}`}>
+            <div key={product._id} className="product-card">
+              <Link to={`/products/${product._id}`} className="product-card-image-wrap">
                 <img
-                  src={product.images[0]}
+                  src={product.images && product.images[0] ? product.images[0] : FALLBACK_IMAGE}
                   alt={product.title}
-                  width="200"
+                  className="product-card-img"
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }}
                 />
+                {product.status !== "AVAILABLE" && (
+                  <span className="badge badge-danger product-card-badge">
+                    {product.status}
+                  </span>
+                )}
               </Link>
 
-              <h3>
+              <div className="product-card-body">
+                <div className="product-card-price">
+                  ₹{product.price.toLocaleString("en-IN")}
+                </div>
+
                 <Link to={`/products/${product._id}`}>
-                  {product.title}
+                  <h3 className="product-card-title">{product.title}</h3>
                 </Link>
-              </h3>
 
-              <p>{product.category}</p>
+                <div className="product-card-footer">
+                  <span className="badge badge-category">{product.category}</span>
 
-              <p>₹{product.price.toLocaleString("en-IN")}</p>
-
-              <button
-                onClick={() => handleAddToCart(product._id)}
-                disabled={addingToCart || product.status !== "AVAILABLE"}
-              >
-                {addingToCart ? "Adding..." : "Add to Cart"}
-              </button>
-
-              {cartMessage && <p>{cartMessage}</p>}
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleAddToCart(product._id)}
+                    disabled={addingToCart || product.status !== "AVAILABLE"}
+                  >
+                    {addingToCart ? "Adding..." : "Add to Cart"}
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      <div>
-        <button
-          disabled={page <= 1 || isLoading}
-          onClick={() => setPage((current) => current - 1)}
-        >
-          Previous
-        </button>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="btn btn-secondary btn-sm"
+            disabled={page <= 1 || isLoading}
+            onClick={() => setPage((current) => current - 1)}
+          >
+            ← Previous
+          </button>
 
-        <span>
-          Page {page} of {totalPages}
-        </span>
+          <span className="pagination-info">
+            Page {page} of {totalPages}
+          </span>
 
-        <button
-          disabled={page >= totalPages || isLoading || totalPages === 0}
-          onClick={() => setPage((current) => current + 1)}
-        >
-          Next
-        </button>
-      </div>
+          <button
+            className="btn btn-secondary btn-sm"
+            disabled={page >= totalPages || isLoading}
+            onClick={() => setPage((current) => current + 1)}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

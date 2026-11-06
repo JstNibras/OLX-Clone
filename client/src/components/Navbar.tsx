@@ -10,40 +10,64 @@ const Navbar = () => {
     (state) => state.auth.isAuthenticated
   );
 
+  const cartItemCount = useAppSelector(
+    (state) => state.cart.products.length
+  );
+
   const handleLogout = () => {
+    localStorage.removeItem("token");
     dispatch(logout());
     navigate("/login");
   };
 
   return (
-    <nav>
-      <Link to="/">
-        <h2>OLX</h2>
-      </Link>
+    <header className="navbar">
+      <div className="navbar-container">
+        <Link to="/products" className="navbar-brand">
+          <span className="navbar-logo-text">
+            OLX<span>.</span>
+          </span>
+        </Link>
 
-      <div>
-        <Link to="/">Products</Link>
+        <nav className="navbar-links">
+          <Link to="/products" className="navbar-link">
+            Explore
+          </Link>
 
-        {isAuthenticated && (
-          <>
-            <Link to="/cart">Cart</Link>
-            <Link to="/my-listings">My Listings</Link>
-
-            <Link to="/create-product">
-              + Sell
-            </Link>
-
-            <button onClick={handleLogout}>
-              Logout
-            </button>
-          </>
-        )}
-
-        {!isAuthenticated && (
-          <Link to="/login">Login</Link>
-        )}
+          {isAuthenticated ? (
+            <>
+              <Link to="/cart" className="navbar-link">
+                Cart
+                {cartItemCount > 0 && (
+                  <span className="navbar-cart-badge">{cartItemCount}</span>
+                )}
+              </Link>
+              <Link to="/my-listings" className="navbar-link">
+                My Ads
+              </Link>
+              <Link to="/my-orders" className="navbar-link">
+                My Orders
+              </Link>
+              <button onClick={handleLogout} className="navbar-logout-btn">
+                Logout
+              </button>
+              <Link to="/create-product" className="btn btn-sell">
+                + Sell
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-outline btn-sm">
+                Login
+              </Link>
+              <Link to="/register" className="btn btn-primary btn-sm">
+                Register
+              </Link>
+            </>
+          )}
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 };
 
