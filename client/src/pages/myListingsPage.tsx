@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { getMyListings } from "../services/productService";
 import type { Product } from "../types/product";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60";
-
 const MyListingsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,11 +87,10 @@ const MyListingsPage = () => {
                   }}
                 />
                 <span
-                  className={`badge product-card-badge ${
-                    product.status === "AVAILABLE"
+                  className={`badge product-card-badge ${product.status === "AVAILABLE"
                       ? "badge-success"
                       : "badge-danger"
-                  }`}
+                    }`}
                 >
                   {product.status}
                 </span>

@@ -5,8 +5,6 @@ import type { Product } from "../types/product";
 import { addProductToCart } from "../features/cart/cartSlice";
 import { getProductById } from "../services/productService";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60";
-
 const ProductDetailsPage = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
@@ -142,9 +140,8 @@ const ProductDetailsPage = () => {
             <div className="product-meta-row">
               <span className="badge badge-category">{product.category}</span>
               <span
-                className={`badge ${
-                  product.status === "AVAILABLE" ? "badge-success" : "badge-danger"
-                }`}
+                className={`badge ${product.status === "AVAILABLE" ? "badge-success" : "badge-danger"
+                  }`}
               >
                 {product.status}
               </span>

@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchMyOrders } from "../features/orders/ordersSlice";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&auto=format&fit=crop&q=60";
-
 const MyOrdersPage = () => {
   const dispatch = useAppDispatch();
 

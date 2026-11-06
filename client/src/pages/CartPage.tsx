@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchCart, removeCartProduct } from "../features/cart/cartSlice";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60";
-
 const CartPage = () => {
   const dispatch = useAppDispatch();
 

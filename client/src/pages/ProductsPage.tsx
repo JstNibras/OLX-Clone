@@ -5,8 +5,6 @@ import { addProductToCart } from "../features/cart/cartSlice";
 import { getProducts } from "../services/productService";
 import type { Product } from "../types/product";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=60";
-
 const ProductsPage = () => {
   const dispatch = useAppDispatch();
 
@@ -32,7 +30,7 @@ const ProductsPage = () => {
           search,
           sort,
           page,
-          limit: 12,
+          limit: 8,
         });
 
         setProducts(result.products);
