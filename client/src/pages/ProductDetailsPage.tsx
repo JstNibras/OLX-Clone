@@ -156,7 +156,7 @@ const ProductDetailsPage = () => {
             </button>
           </div>
 
-          <div className="seller-info-card">
+          {/* <div className="seller-info-card">
             <div className="seller-info-header">
               <div className="seller-avatar">👤</div>
               <div>
@@ -171,7 +171,7 @@ const ProductDetailsPage = () => {
             <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginTop: "0.5rem" }}>
               Member ID: {product.sellerId}
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

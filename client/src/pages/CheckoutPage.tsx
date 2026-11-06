@@ -143,7 +143,7 @@ const CheckoutPage = () => {
               border: "1px solid #d1e2e6",
             }}
           >
-            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            {/* <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
               <span style={{ fontSize: "1.5rem" }}>🛡️</span>
               <div>
                 <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-primary)" }}>
@@ -153,7 +153,7 @@ const CheckoutPage = () => {
                   Direct seller communication, secure order placement, and verified item listings.
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

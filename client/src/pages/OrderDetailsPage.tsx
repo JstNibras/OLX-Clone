@@ -138,9 +138,6 @@ const OrderDetailsPage = () => {
                     <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "0.25rem" }}>
                       {item.title}
                     </h3>
-                    <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                      Seller ID: {item.sellerId}
-                    </p>
                   </div>
 
                   <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--color-primary)" }}>
