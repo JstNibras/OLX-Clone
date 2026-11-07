@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyListings } from "../services/productService";
 import type { Product } from "../types/product";
+import { FALLBACK_IMAGE } from "../constants";
 
 const MyListingsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);

@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import type { Request, Response } from "express";
-import { 
-    getAvailableProducts, 
-    getProductById, 
-    createProduct, 
-    getMyProducts, 
-    updateProduct, 
-    deleteProduct, 
+import {
+    getAvailableProducts,
+    getProductById,
+    createProduct,
+    getMyProducts,
+    updateProduct,
+    deleteProduct,
 } from "../services/productService.js";
 
 export const getProducts = async (req: Request, res: Response) => {
@@ -18,13 +18,13 @@ export const getProducts = async (req: Request, res: Response) => {
         );
 
         const search = typeof req.query.search === "string"
-                            ? req.query.search.trim() : undefined;
+            ? req.query.search.trim() : undefined;
 
-        const category  = typeof req.query.category === "string"
-                            ? req.query.category.trim() : undefined;
+        const category = typeof req.query.category === "string"
+            ? req.query.category.trim() : undefined;
 
         const sort = typeof req.query.sort === "string"
-                            ? req.query.sort : "newest";
+            ? req.query.sort : "newest";
 
         const result = await getAvailableProducts({
             search,
@@ -242,7 +242,7 @@ export const updateProductController = async (req: Request, res: Response) => {
 export const deleteProductController = async (req: Request, res: Response) => {
     try {
         const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0];
-        
+
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,

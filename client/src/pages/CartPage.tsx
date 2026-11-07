@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchCart, removeCartProduct } from "../features/cart/cartSlice";
+import { FALLBACK_IMAGE } from "../constants";
 
 const CartPage = () => {
   const dispatch = useAppDispatch();

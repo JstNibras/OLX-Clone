@@ -14,7 +14,7 @@ export const registerUser = async (data: RegisterInput) => {
     const existingUser = await User.findOne({ email });
 
     if(existingUser) {
-        throw new Error("Email alredy registered");
+        throw new Error("Email already registered");
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);

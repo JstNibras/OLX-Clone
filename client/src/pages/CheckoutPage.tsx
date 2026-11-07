@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchCart, checkoutOrder } from "../features/cart/cartSlice";
+import { FALLBACK_IMAGE } from "../constants";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import type { Product } from "../types/product";
 import { addProductToCart } from "../features/cart/cartSlice";
 import { getProductById } from "../services/productService";
+import { FALLBACK_IMAGE } from "../constants";
 
 const ProductDetailsPage = () => {
   const dispatch = useAppDispatch();

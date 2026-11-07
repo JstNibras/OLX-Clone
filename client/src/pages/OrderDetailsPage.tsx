@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchOrderById } from "../features/orders/ordersSlice";
+import { FALLBACK_IMAGE } from "../constants";
 
 const OrderDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
