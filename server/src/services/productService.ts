@@ -1,4 +1,4 @@
-import Product from "../models/Product";
+import Product from "../models/Product.js";
 
 interface ProductQuery {
     search?: string;
@@ -43,7 +43,7 @@ export const getAvailableProducts = async (query: ProductQuery) => {
     if(search) {
         filter.title = {
             $regex: search,
-            $option: "i",
+            $options: "i",
         }
     }
 

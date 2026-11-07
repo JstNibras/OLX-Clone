@@ -1,76 +1,89 @@
-import Cart from "../models/Cart";
-import Product from "../models/Product";
+import Cart from "../models/Cart.js";
+import Product from "../models/Product.js";
 
-export const addProductToCart = async (userId: string, productId: string) => {
-    const product = await Product.findOne({
-        _id: productId,
-        status: "AVAILABLE",
-        isDeleted: false,
-    })
+export const addProductToCart = async (
+  userId: string,
+  productId: string
+) => {
+  const product = await Product.findOne({
+    _id: productId,
+    status: "AVAILABLE",
+    isDeleted: false,
+  });
 
-    if(!product) {
-        return { error: "PRODUCT_NOT_FOUND" as const };
-    }
+  if (!product) {
+    return { error: "PRODUCT_NOT_FOUND" as const };
+  }
 
-    if (product.sellerId.toString() === userId) {
-        return { error: "OWN_PRODUCT" as const }
-    }
+  if (product.sellerId.toString() === userId) {
+    return { error: "OWN_PRODUCT" as const };
+  }
 
-    const cart = await Cart.findOneAndUpdate(
-        { userId },
-        {
-            $addToSet: {
-                productIds: product._id,
-            },
-        },
-        {
-            new: true,
-            upsert: true,
-            setDefaultsOnInsert: true,
-        }
-    )
+  let cart = await Cart.findOne({ userId });
 
-    return { cart, error: null}
-}
+  if (!cart) {
+    cart = await Cart.create({
+      userId,
+      productIds: [product._id],
+    });
+
+    return { cart, error: null };
+  }
+
+  const alreadyInCart = cart.productIds.some(
+    (id) => id.toString() === productId
+  );
+
+  if (alreadyInCart) {
+    return { error: "ALREADY_IN_CART" as const };
+  }
+
+  cart.productIds.push(product._id);
+  await cart.save();
+
+  return { cart, error: null };
+};
 
 export const getUserCart = async (userId: string) => {
-    const cart = await Cart.findOne({ userId })
-        .populate({
-            path: "productIds",
-            match: {
-                status: "AVAILABLE",
-                isDeleted: false,
-            },
-            select: "titile description price category images sellerId status",
-            populate: {
-                path: "sellerId",
-                select: "name",
-            },
-        }).lean();
+  const cart = await Cart.findOne({ userId })
+    .populate({
+      path: "productIds",
+      match: {
+        status: "AVAILABLE",
+        isDeleted: false,
+      },
+      select: "title description price category images sellerId status",
+      populate: {
+        path: "sellerId",
+        select: "name",
+      },
+    })
+    .lean();
 
-    if(!cart) {
-        return {
-            userId,
-            productIds: [],
-        }
-    }
-
+  if (!cart) {
     return {
-        ...cart,
-        productIds: cart.productIds.filter(Boolean),
-    }
-}
+      userId,
+      productIds: [],
+    };
+  }
 
-export const removeProductFromCart = async (userId: string, productId: string) => {
-    return Cart.findOneAndUpdate(
-        { userId },
-        {
-            $pull: {
-                productIds: productId,
-            },
-        },
-        {
-            new: true,
-        }
-    )
-}
+  return {
+    ...cart,
+    productIds: cart.productIds.filter(Boolean),
+  };
+};
+
+export const removeProductFromCart = async (
+  userId: string,
+  productId: string
+) => {
+  return Cart.findOneAndUpdate(
+    { userId },
+    {
+      $pull: {
+        productIds: productId,
+      },
+    },
+    { new: true }
+  );
+};
