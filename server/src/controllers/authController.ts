@@ -87,7 +87,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     try {
         if(!req.userId) {
             return res.status(401).json({
-                sucess: false,
+                success: false,
                 message: "Unauthorized"
             })
         }

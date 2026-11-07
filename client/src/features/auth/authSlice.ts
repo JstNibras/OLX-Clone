@@ -8,7 +8,7 @@ const initialState: AuthState = {
     token: null,
     isAuthenticated: false,
     isLoading: false,
-    isInitializing: false,
+    isInitializing: true,
     error: null,
 }
 
@@ -76,8 +76,6 @@ const authSlice = createSlice({
         },
 
         logout: (state) => {
-            localStorage.removeItem("token");
-
             state.user = null;
             state.token = null;
             state.isAuthenticated = false;

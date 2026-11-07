@@ -1,16 +1,14 @@
 import { useEffect } from "react";
-
-import AppRouter from "./routes/AppRouter";
 import { useAppDispatch } from "./app/hooks";
 import { initializeAuth } from "./features/auth/authSlice";
+import AppRouter from "./routes/AppRouter";
+import "./App.css";
 
 function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      dispatch(initializeAuth());
-    }
+    dispatch(initializeAuth());
   }, [dispatch]);
 
   return <AppRouter />;
